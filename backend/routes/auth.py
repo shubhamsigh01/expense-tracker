@@ -20,7 +20,7 @@ def register():
     salt = bcrypt.gensalt()
     hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt)
     
-    # Store string in db as some strings (e.g. SQLite doesn't natively handle bytes well for Strings without decoding)
+    # Store as string for broad database compatibility
     new_user = User(email=email, password_hash=hashed_password.decode('utf-8'))
     
     new_user.save()

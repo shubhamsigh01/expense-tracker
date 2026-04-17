@@ -1,10 +1,19 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from models import db, Expense
+from models import Expense
 from ml.classifier import predict
-from datetime import datetime
+from datetime import datetime, timezone
 
 expenses_bp = Blueprint('expenses', __name__)
+
+def parse_iso_date(date_str: str) -> datetime:
+    """Parse ISO date string, falling back to current UTC time if invalid or missing."""
+    if not date_str:
+        return datetime.now(timezone.utc)
+    try:
+        return datetime.fromisoformat(date_str.replace('Z', '+00:00'))
+    except (ValueError, TypeError):
+        return datetime.now(timezone.utc)
 
 @expenses_bp.route('', methods=['GET'])
 @jwt_required()
@@ -16,35 +25,25 @@ def get_expenses():
 @expenses_bp.route('', methods=['POST'])
 @jwt_required()
 def create_expense():
-    user_id = get_jwt_identity()
+    user_id = str(get_jwt_identity())
     data = request.get_json()
     
     amount = data.get('amount')
     description = data.get('description')
-    date_str = data.get('date')
     
     if amount is None or not description:
-        return jsonify({"msg": "Missing amount or description"}), 400
+        return jsonify({"msg": "Amount and description are required"}), 400
         
-    date = datetime.utcnow()
-    if date_str:
-        try:
-            date = datetime.fromisoformat(date_str.replace('Z', '+00:00'))
-        except ValueError:
-            pass
-
-    category = data.get('category')
-    if not category:
-        category = predict(description)
+    date = parse_iso_date(data.get('date'))
+    category = data.get('category') or predict(description)
 
     expense = Expense(
-        user_id=str(user_id),
+        user_id=user_id,
         amount=float(amount),
         description=description,
         category=category,
         date=date
     )
-    
     expense.save()
     
     return jsonify(expense.to_dict()), 201
@@ -56,11 +55,11 @@ def update_delete_expense(id):
     expense = Expense.objects(id=id, user_id=user_id).first()
     
     if not expense:
-        return jsonify({"msg": "Not found"}), 404
+        return jsonify({"msg": "Expense not found"}), 404
         
     if request.method == 'DELETE':
         expense.delete()
-        return jsonify({"msg": "Deleted"}), 200
+        return jsonify({"msg": "Expense deleted successfully"}), 200
         
     data = request.get_json()
     if 'amount' in data:
@@ -70,10 +69,7 @@ def update_delete_expense(id):
     if 'category' in data:
         expense.category = data['category']
     if 'date' in data:
-        try:
-            expense.date = datetime.fromisoformat(data['date'].replace('Z', '+00:00'))
-        except ValueError:
-            pass
+        expense.date = parse_iso_date(data['date'])
             
     expense.save()
     return jsonify(expense.to_dict()), 200

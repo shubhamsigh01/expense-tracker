@@ -1,5 +1,5 @@
 import mongoengine as db
-import datetime
+from datetime import datetime, timezone
 
 class User(db.Document):
     email = db.StringField(required=True, unique=True, max_length=120)
@@ -10,8 +10,8 @@ class Expense(db.Document):
     amount = db.FloatField(required=True)
     description = db.StringField(required=True, max_length=200)
     category = db.StringField(required=True, max_length=50)
-    date = db.DateTimeField(required=True, default=datetime.datetime.utcnow)
-    created_at = db.DateTimeField(default=datetime.datetime.utcnow)
+    date = db.DateTimeField(required=True, default=lambda: datetime.now(timezone.utc))
+    created_at = db.DateTimeField(default=lambda: datetime.now(timezone.utc))
 
     def to_dict(self):
         return {

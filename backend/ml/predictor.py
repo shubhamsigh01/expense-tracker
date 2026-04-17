@@ -65,7 +65,7 @@ def get_insights(expenses, budgets=None) -> list[str]:
         if cat in predictions and predictions[cat] > 0:
             avg_spend = predictions[cat]
             if current_spend > avg_spend * 1.3:
-                insights.append(f"You overspend on {cat} — ₹{current_spend:.2f} this month vs your historical average of ₹{avg_spend:.2f}.")
+                insights.append(f"Spending on {cat} is {((current_spend/avg_spend)-1)*100:.0f}% higher than your 3-month average of ₹{avg_spend:.2f}.")
     
     if budgets:
         budget_dict = {b.category if hasattr(b, 'category') else b['category']: b.monthly_limit if hasattr(b, 'monthly_limit') else b['monthly_limit'] for b in budgets}
@@ -73,15 +73,15 @@ def get_insights(expenses, budgets=None) -> list[str]:
             if cat in budget_dict:
                 limit = budget_dict[cat]
                 if current_spend > limit:
-                     insights.append(f"Budget exceeded for {cat}. You spent ₹{current_spend:.2f} but your limit is ₹{limit:.2f}.")
+                     insights.append(f"Budget exceeded for {cat} by ₹{current_spend - limit:.2f}.")
                 elif current_spend > limit * 0.8:
-                     savings = limit - current_spend
-                     insights.append(f"Watch out! You are near your budget limit for {cat}. Only ₹{savings:.2f} left to spend.")
+                     remaining = limit - current_spend
+                     insights.append(f"Approaching budget limit for {cat}. ₹{remaining:.2f} remaining.")
                 else:
-                     savings = limit - current_spend
-                     insights.append(f"Great job on {cat}! You've saved ₹{savings:.2f} of your budget so far.")
+                     remaining = limit - current_spend
+                     insights.append(f"Spending for {cat} is well within budget. ₹{remaining:.2f} remaining.")
 
     if not insights:
-        insights.append("Your spending looks stable and within normal ranges.")
+        insights.append("Spending patterns are within normal historical ranges.")
 
     return insights

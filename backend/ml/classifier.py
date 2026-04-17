@@ -138,7 +138,7 @@ model = make_pipeline(TfidfVectorizer(), MultinomialNB())
 model.fit(df['description'], df['category'])
 
 def predict(description: str) -> str:
-    """Predict the category of an expense based on its description."""
+    """Categorizes an expense based on its description using the trained Naive Bayes model."""
     if not description:
         return "Other"
     prediction = model.predict([description])

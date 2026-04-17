@@ -4,6 +4,7 @@ import { SavingSuggestionCard } from "../components/SavingSuggestionCard";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { useEffect, useRef, useState } from "react";
 import api from "../../api";
+import { isCurrentMonth } from "../../utils/date";
 
 export function Insights() {
   const [visibleCards, setVisibleCards] = useState<number[]>([]);
@@ -24,10 +25,8 @@ export function Insights() {
       ]);
 
       const thisMonthTotals: Record<string, number> = {};
-      const now = new Date();
       expenses.forEach((e: any) => {
-         const d = new Date(e.date);
-         if(d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()) {
+         if(isCurrentMonth(e.date)) {
             thisMonthTotals[e.category] = (thisMonthTotals[e.category] || 0) + e.amount;
          }
       });
@@ -40,39 +39,35 @@ export function Insights() {
       setPredictionData(processedPredictions);
 
       const parsedInsights = insightsData.insights.map((text: string, i: number) => {
-         let type = "neutral";
-         let icon = Sparkles;
-         let title = "AI Observation";
-         let accentColor = "#F59E0B";
+         let icon = Info;
+         let title = "Spending Pattern";
+         let accentColor = "#5B4EE8";
 
-         if(text.includes("overspend") || text.includes("exceeded") || text.includes("Watch out")) {
-             type = "warning";
+         if(text.includes("higher than") || text.includes("exceeded")) {
              icon = AlertCircle;
              accentColor = "#F05C47";
              title = "Action Required";
-         } else if (text.includes("Great job")) {
-             type = "positive";
+         } else if (text.includes("within budget") || text.includes("Well within")) {
              icon = TrendingUp;
              accentColor = "#22C08B";
-             title = "Positive Trend";
-         } else if (text.includes("stable")) {
+             title = "Efficiency Found";
+         } else if (text.includes("Patterns are within")) {
              icon = Info;
              accentColor = "#5B4EE8";
-             title = "Stable Spending";
+             title = "System Review";
          }
 
-         return { id: i, type, icon, title, description: text, accentColor };
+         return { id: i, icon, title, description: text, accentColor };
       });
 
       setInsights(parsedInsights);
       
-      // Simulated saving suggestions based on predictions vs this month
       const suggestions = processedPredictions
          .filter(p => p.thisMonth > p.nextMonth)
          .map((p, i) => ({
             id: i,
-            text: `You spent ${p.thisMonth} on ${p.category} this month. Aim for the predicted ${p.nextMonth} next month.`,
-            saving: "₹" + (p.thisMonth - p.nextMonth).toFixed(2) + " potential savings"
+            text: `Current ${p.category} spending is ₹${p.thisMonth}. Target for next month is ₹${p.nextMonth}.`,
+            saving: "₹" + (p.thisMonth - p.nextMonth).toFixed(2) + " optimized allocation"
          }));
       setSavingSuggestions(suggestions);
 
@@ -107,7 +102,6 @@ export function Insights() {
 
   return (
     <div className="space-y-8">
-      {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -116,13 +110,12 @@ export function Insights() {
         <div className="flex items-center gap-2 mb-2">
           <Sparkles className="w-6 h-6 text-primary" />
           <h1 className="font-semibold" style={{ fontSize: "28px" }}>
-            AI Insights
+            Spending Insights
           </h1>
         </div>
-        <p className="text-muted-foreground">Here's what your spending tells us this month</p>
+        <p className="text-muted-foreground">Data-driven analysis of your allocation</p>
       </motion.div>
 
-      {/* Insight Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {insights.map((insight, index) => (
           <motion.div
@@ -155,14 +148,13 @@ export function Insights() {
         ))}
       </div>
 
-      {/* Next Month Prediction */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.4 }}
         className="bg-card rounded-2xl p-6 shadow-sm"
       >
-        <h3 className="font-semibold mb-6">Next Month Prediction</h3>
+        <h3 className="font-semibold mb-6">Allocation Forecast</h3>
         <ResponsiveContainer width="100%" height={320}>
           {predictionData.length > 0 ? (
           <BarChart data={predictionData}>
@@ -178,23 +170,22 @@ export function Insights() {
               }}
             />
             <Legend />
-            <Bar dataKey="thisMonth" fill="#C7D2FE" name="This Month" radius={[8, 8, 0, 0]} />
-            <Bar dataKey="nextMonth" fill="#5B4EE8" name="Predicted Next Month" radius={[8, 8, 0, 0]} />
+            <Bar dataKey="thisMonth" fill="#C7D2FE" name="Current Month" radius={[8, 8, 0, 0]} />
+            <Bar dataKey="nextMonth" fill="#5B4EE8" name="Projected Next Month" radius={[8, 8, 0, 0]} />
           </BarChart>
           ) : (
-            <div className="h-full flex items-center justify-center text-muted-foreground">Not enough data for predictions.</div>
+            <div className="h-full flex items-center justify-center text-muted-foreground">Insufficient data for forecasting.</div>
           )}
         </ResponsiveContainer>
       </motion.div>
 
-      {/* Saving Suggestions */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.5 }}
         className="space-y-4"
       >
-        <h3 className="font-semibold">Saving Suggestions</h3>
+        <h3 className="font-semibold">Optimization Targets</h3>
         <div className="space-y-3">
           {savingSuggestions.length > 0 ? savingSuggestions.map((suggestion, index) => (
             <SavingSuggestionCard
@@ -204,7 +195,7 @@ export function Insights() {
               delay={0.6 + index * 0.1}
             />
           )) : (
-            <p className="text-muted-foreground">No current spending anomalies to suggest savings on.</p>
+            <p className="text-muted-foreground">Historical consistency is high; no current anomalies identified.</p>
           )}
         </div>
       </motion.div>

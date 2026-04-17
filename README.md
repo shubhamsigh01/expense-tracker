@@ -1,48 +1,51 @@
-# Expense Tracker with AI Insights
+# Expense Tracker & Allocation Analyzer
 
-A full-stack web application for tracking personal expenses, automatically categorized via Machine Learning, and featuring AI-powered financial insights.
+A specialized dashboard for monitoring personal expenditures and generating predictive allocation insights. This tool automates expense categorization using a Naive Bayes classifier and provides historical trend analysis.
 
-## Technologies Used
-- **Frontend**: React (Vite), Tailwind CSS, Recharts, Axios, React Router Dom
-- **Backend**: Flask, Flask-SQLAlchemy, Flask-JWT-Extended, Flask-CORS
-- **Machine Learning**: Scikit-learn (TfidfVectorizer + MultinomialNB text classification, 3-month Moving Average prediction)
-- **Database**: SQLite (Development) / PostgreSQL-Ready
+## Key Features
 
-## Setup Instructions
+- **Automated Categorization**: Uses TF-IDF and Naive Bayes to classify transaction descriptions into functional categories.
+- **Predictive Forecasting**: Generates next-month spending projections based on a 3-month moving average.
+- **Dynamic Dashboard**: Real-time visualization of spending patterns using Recharts.
+- **Budget Tracking**: Comparative analysis of actual spending against user-defined monthly limits.
+- **Secure Authentication**: JWT-based user sessions with encrypted credential storage.
 
-### Backend Setup
-1. Open terminal and go to the `backend` directory:
-   ```bash
-   cd expense-tracker/backend
-   ```
-2. Create and activate a Virtual Environment *(optional but recommended)*:
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   ```
-3. Install dependencies:
+## Tech Stack
+
+| Layer | Technologies |
+| :--- | :--- |
+| **Frontend** | React (Vite), TypeScript, Tailwind CSS, Recharts, Lucide Icons |
+| **Backend** | Python (Flask), MongoEngine |
+| **Machine Learning** | Scikit-learn (Naive Bayes, TF-IDF) |
+| **Database** | MongoDB Atlas |
+
+## Quick Start
+
+### Backend
+
+1. Navigate to the `backend` directory.
+2. Install dependencies:
    ```bash
    pip install -r requirements.txt
    ```
-4. Set up environment variables: 
-   Copy `.env.example` to `.env` (the application falls back to safe local dev defaults if omitted).
-5. Run the server:
+3. Configure environment variables in `.env`.
+4. Start the server:
    ```bash
    python app.py
    ```
-   *Note: This will automatically train the ML pipeline, seed the test data, create the SQLite DB, and bind to `http://localhost:8000`.*
 
-### Frontend Setup
-1. Open a new terminal and navigate to the `frontend` directory:
-   ```bash
-   cd expense-tracker/frontend
-   ```
-2. Install npm dependencies:
+### Frontend
+
+1. Navigate to the `frontend` directory.
+2. Install dependencies:
    ```bash
    npm install
    ```
-3. Run the development server:
+3. Start the development server:
    ```bash
    npm run dev
    ```
-4. Open the displayed local server (usually `http://localhost:5173`) in your browser to access the Expense Tracker.
+
+## Contributing
+
+Contributions are welcome. Please ensure that logic refactors maintain 100% compatibility with the existing MongoDB schema and JWT implementation. Submit pull requests with a clear description of the optimization.

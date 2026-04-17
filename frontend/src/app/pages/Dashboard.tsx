@@ -5,6 +5,7 @@ import { ExpenseRow } from "../components/ExpenseRow";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from "recharts";
 import { useState, useEffect } from "react";
 import api from "../../api";
+import { isCurrentMonth, getShortMonthName, isSameMonth, formatDisplayDate } from "../../utils/date";
 
 const CATEGORY_COLORS: Record<string, string> = {
   Food: "#F59E0B",
@@ -33,18 +34,12 @@ export function Dashboard() {
     }
   };
 
-  const currentMonthExpenses = expenses.filter(e => {
-    const expenseDate = new Date(e.date);
-    const now = new Date();
-    return expenseDate.getMonth() === now.getMonth() && expenseDate.getFullYear() === now.getFullYear();
-  });
-
+  const currentMonthExpenses = expenses.filter(e => isCurrentMonth(e.date));
   const totalSpent = currentMonthExpenses.reduce((sum, e) => sum + e.amount, 0);
 
   const categoryMap: Record<string, number> = {};
   currentMonthExpenses.forEach(e => {
-    if(!categoryMap[e.category]) categoryMap[e.category] = 0;
-    categoryMap[e.category] += e.amount;
+    categoryMap[e.category] = (categoryMap[e.category] || 0) + e.amount;
   });
   
   const categoryData = Object.keys(categoryMap).map(k => ({ 
@@ -59,19 +54,18 @@ export function Dashboard() {
   const now = new Date();
   for(let i=5; i>=0; i--) {
      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-     const monthStr = d.toLocaleString('default', { month: 'short' });
+     const monthStr = getShortMonthName(d);
      
-     const monthTotal = expenses.filter(e => {
-        const ed = new Date(e.date);
-        return ed.getMonth() === d.getMonth() && ed.getFullYear() === d.getFullYear();
-     }).reduce((sum, e) => sum + e.amount, 0);
+     const monthTotal = expenses
+       .filter(e => isSameMonth(e.date, d.getMonth(), d.getFullYear()))
+       .reduce((sum, e) => sum + e.amount, 0);
      
      monthlyData.push({ month: monthStr, amount: monthTotal });
   }
 
   const recentExpenses = expenses.slice(0, 5).map(e => ({
      id: e.id,
-     date: new Date(e.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+     date: formatDisplayDate(e.date),
      description: e.description,
      category: e.category,
      amount: "₹" + e.amount.toFixed(2)
@@ -79,7 +73,6 @@ export function Dashboard() {
 
   return (
     <div className="space-y-8">
-      {/* Greeting */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -88,11 +81,10 @@ export function Dashboard() {
         <h1 className="font-semibold mb-1" style={{ fontSize: "28px" }}>
           Dashboard
         </h1>
-        <p className="text-muted-foreground">Here's your spending summary for this month</p>
+        <p className="text-muted-foreground">Monthly spending overview</p>
       </motion.div>
 
-      {/* Stat Cards */}
-      <div className="grid grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <StatCard
           title="Total Spent"
           value={`₹${totalSpent.toFixed(2)}`}
@@ -124,9 +116,7 @@ export function Dashboard() {
         />
       </div>
 
-      {/* Charts Row */}
-      <div className="grid grid-cols-2 gap-6">
-        {/* Category Bar Chart */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -166,7 +156,6 @@ export function Dashboard() {
           </ResponsiveContainer>
         </motion.div>
 
-        {/* Monthly Trend Line Chart */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -206,7 +195,6 @@ export function Dashboard() {
         </motion.div>
       </div>
 
-      {/* Recent Expenses Table */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -214,7 +202,7 @@ export function Dashboard() {
         className="bg-card rounded-2xl p-6 shadow-sm"
       >
         <h3 className="font-semibold mb-4">Recent Expenses</h3>
-        <div className="overflow-hidden">
+        <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr className="border-b border-border">
