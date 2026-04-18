@@ -1,4 +1,4 @@
-from flask import Flask, send_file
+from flask import Flask, send_file, jsonify
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from config import Config
@@ -16,7 +16,15 @@ from models import Expense
 app = Flask(__name__)
 app.config.from_object(Config)
 
-CORS(app)
+# Allow Vercel frontend + local dev. Add your Vercel URL here once known.
+ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    "http://localhost:3000",
+    "https://expense-tracker-frontend.vercel.app",  # update with your real Vercel URL
+    "https://*.vercel.app",  # covers all Vercel preview deployments
+]
+CORS(app, origins=ALLOWED_ORIGINS, supports_credentials=True)
+
 mongoengine.connect(host=app.config['MONGODB_SETTINGS']['host'])
 jwt = JWTManager(app)
 
@@ -24,6 +32,11 @@ app.register_blueprint(auth_bp, url_prefix='/auth')
 app.register_blueprint(expenses_bp, url_prefix='/expenses')
 app.register_blueprint(insights_bp, url_prefix='/insights')
 app.register_blueprint(budgets_bp, url_prefix='/budgets')
+
+@app.route('/health', methods=['GET'])
+def health_check():
+    """Health check endpoint — used by Vercel frontend to wake the Render instance."""
+    return jsonify({"status": "ok", "service": "expense-tracker-api"}), 200
 
 @app.route('/export', methods=['GET'])
 @jwt_required()

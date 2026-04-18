@@ -21,9 +21,16 @@
  * - Fully responsive design
  */
 
+import { useEffect } from "react";
 import { RouterProvider } from "react-router";
 import { router } from "./routes";
+import { wakeBackend } from "../api";
 
 export default function App() {
+  useEffect(() => {
+    // Pre-warm the Render backend on app load to minimize cold-start delays
+    wakeBackend();
+  }, []);
+
   return <RouterProvider router={router} />;
 }
