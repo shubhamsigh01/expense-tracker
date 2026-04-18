@@ -55,11 +55,6 @@ def export_expenses():
     )
 
 if __name__ == '__main__':
-    from waitress import serve
     import os
-    if os.environ.get('FLASK_ENV') == 'development':
-        app.run(debug=True, port=8000)
-    else:
-        port = int(os.environ.get('PORT', 8000))
-        print(f"Starting WSGI Waitress Server on port {port}...")
-        serve(app, host='0.0.0.0', port=port)
+    port = int(os.environ.get('PORT', 8000))
+    app.run(host='0.0.0.0', port=port, debug=os.environ.get('FLASK_ENV') == 'development')
