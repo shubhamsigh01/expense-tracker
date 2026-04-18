@@ -1,7 +1,7 @@
 import { motion } from "motion/react";
 import { Utensils, Car, ShoppingBag, Tv, Receipt, Heart, Plus, MoreHorizontal } from "lucide-react";
 import { BudgetCard } from "../components/BudgetCard";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import api from "../../api";
 
 const CATEGORY_ICONS: Record<string, any> = {

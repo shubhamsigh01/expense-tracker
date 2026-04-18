@@ -11,6 +11,7 @@
  * - /settings : Account and app settings
  */
 
+import React from "react";
 import { createBrowserRouter, Navigate } from "react-router";
 import { Layout } from "./components/Layout";
 import { Dashboard } from "./pages/Dashboard";
