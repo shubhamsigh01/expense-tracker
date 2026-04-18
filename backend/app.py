@@ -16,14 +16,10 @@ from models import Expense
 app = Flask(__name__)
 app.config.from_object(Config)
 
-# Allow Vercel frontend + local dev. Add your Vercel URL here once known.
-ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-    "http://localhost:3000",
-    "https://expense-tracker-frontend.vercel.app",  # update with your real Vercel URL
-    "https://*.vercel.app",  # covers all Vercel preview deployments
-]
-CORS(app, origins=ALLOWED_ORIGINS, supports_credentials=True)
+# CORS — open to all origins while Vercel URL is being confirmed.
+# TODO: Replace "*" with your exact Vercel URL once known, e.g.:
+# CORS(app, origins=["https://your-app.vercel.app", "http://localhost:5173"], supports_credentials=False)
+CORS(app, origins="*")
 
 mongoengine.connect(host=app.config['MONGODB_SETTINGS']['host'])
 jwt = JWTManager(app)
