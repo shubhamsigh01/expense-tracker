@@ -1,10 +1,22 @@
+# Exported from Render on 2026-04-19T11:31:10Z
+version: "1"
 services:
-  - type: web
-    name: expense-tracker-backend
-    runtime: python
-    rootDir: backend
-    buildCommand: pip install --upgrade pip && pip install --only-binary=:all: -r requirements.txt
-    startCommand: gunicorn app:app
-    envVars:
-      - key: PYTHON_VERSION
-        value: 3.11.9
+- type: web
+  name: expense-tracker-1
+  runtime: python
+  repo: https://github.com/shubhamsigh01/expense-tracker
+  plan: free
+  envVars:
+  - key: JWT_SECRET_KEY
+    sync: false
+  - key: DATABASE_URL
+    sync: false
+  - key: SECRET_KEY
+    sync: false
+  - key: Mongo_URI
+    sync: false
+  region: oregon
+  buildCommand: pip install -r requirements.txt
+  startCommand: python app.py
+  autoDeployTrigger: commit
+  rootDir: ./backend
