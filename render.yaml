@@ -4,6 +4,7 @@ services:
 - type: web
   name: expense-tracker-1
   runtime: python
+  pythonVersion: "3.11.9"
   repo: https://github.com/shubhamsigh01/expense-tracker
   plan: free
   envVars:
@@ -16,7 +17,7 @@ services:
   - key: Mongo_URI
     sync: false
   region: oregon
-  buildCommand: pip install -r requirements.txt
+  buildCommand: pip install --only-binary=:all: -r requirements.txt
   startCommand: python app.py
   autoDeployTrigger: commit
   rootDir: ./backend
